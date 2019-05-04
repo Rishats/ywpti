@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/jasonlvhit/gocron"
 	"github.com/joho/godotenv"
@@ -11,11 +13,6 @@ import (
 )
 
 func apiData() string {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	apiKey := os.Getenv("YW_API_KEY")
 	apiUri := os.Getenv("YW_API_URI") + "?lat=" + os.Getenv("YW_LAT") + "&lon=" + os.Getenv("YW_LON") + "&lang=" + os.Getenv("YW_LANG")
 
@@ -33,6 +30,20 @@ func apiData() string {
 	body, err := ioutil.ReadAll(resp.Body)
 
 	return string(body)
+}
+
+func sendToHorn(text string) {
+	m := map[string]interface{}{
+		"text": text,
+	}
+	mJson, _ := json.Marshal(m)
+	contentReader := bytes.NewReader(mJson)
+	req, _ := http.NewRequest("POST", os.Getenv("INTEGRAM_WEBHOOK_URI"), contentReader)
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, _ := client.Do(req)
+
+	fmt.Println(resp)
 }
 
 func conditionTranslate(condition string) string {
@@ -60,8 +71,24 @@ func conditionTranslate(condition string) string {
 }
 
 func dayForecastShow() {
-	fmt.Println("I will show forecast data.")
-	apiData()
+	dataJson := apiData()
+	var data map[string]interface{}
+	json.Unmarshal([]byte(dataJson), &data)
+
+	//forecast := data["forecasts"].(map[string]interface{})
+	fact := data["fact"].(map[string]interface{})
+
+	//for key, value := range forecast {
+	//	// Each value is an interface{} type, that is type asserted as a string
+	//	fmt.Println(key, value.(string))
+	//}
+
+	for key, value := range fact {
+		// Each value is an interface{} type, that is type asserted as a string
+		fmt.Println(key, value.(string))
+	}
+
+	//sendToHorn(text)
 }
 
 func tasks() {
@@ -80,5 +107,12 @@ func tasks() {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	dayForecastShow()
+
 	tasks()
 }
