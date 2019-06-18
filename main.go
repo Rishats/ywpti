@@ -6,11 +6,33 @@ import (
 	"fmt"
 	"github.com/jasonlvhit/gocron"
 	"github.com/joho/godotenv"
+	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 )
+
+func getTemplate(fileName string, data interface{}) (err error, result string) {
+	templates, err := template.ParseGlob("templates/*.gohtml")
+	if err != nil {
+		log.Fatal("Error loading templates:" + err.Error())
+	}
+
+	templates, err = templates.ParseFiles(fileName)
+	if err != nil {
+		return
+	}
+
+	var tpl bytes.Buffer
+	if err := templates.Execute(&tpl, data); err != nil {
+		panic(err)
+	}
+
+	result = tpl.String()
+
+	return
+}
 
 func apiData() string {
 	apiKey := os.Getenv("YW_API_KEY")
@@ -75,19 +97,24 @@ func dayForecastShow() {
 	var data map[string]interface{}
 	json.Unmarshal([]byte(dataJson), &data)
 
-	//forecast := data["forecasts"].(map[string]interface{})
-	fact := data["fact"].(map[string]interface{})
+	forecast := data["forecasts"].([]interface{})
+	//fact := data["fact"].(map[string]interface{})
 
-	//for key, value := range forecast {
+	todayForecast := forecast[0].(map[string]interface{})
+	todayParts := todayForecast["parts"].(map[string]interface{})
+	todayMorning := todayParts["morning"].(map[string]interface{})
+	todayDay := todayParts["day"]
+	todayEvening := todayParts["evening"]
+	fmt.Println(todayDay, todayEvening)
+
+	//for _, value := range fact {
 	//	// Each value is an interface{} type, that is type asserted as a string
-	//	fmt.Println(key, value.(string))
+	//	fmt.Println(value)
 	//}
 
-	for key, value := range fact {
-		// Each value is an interface{} type, that is type asserted as a string
-		fmt.Println(key, value.(string))
-	}
+	//var text string = "Сегодня утром будет " + conditionTranslate(todayMorning["condition"].(string))
 
+	fmt.Println(getTemplate("day_forecast_show.gohtml", todayMorning))
 	//sendToHorn(text)
 }
 
