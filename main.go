@@ -19,7 +19,7 @@ func getTemplate(fileName string, data interface{}) (err error, result string) {
 		log.Fatal("Error loading templates:" + err.Error())
 	}
 
-	templates, err = templates.ParseFiles(fileName)
+	templates, err = templates.ParseFiles("templates/" + fileName)
 	if err != nil {
 		return
 	}
@@ -97,24 +97,37 @@ func dayForecastShow() {
 	var data map[string]interface{}
 	json.Unmarshal([]byte(dataJson), &data)
 
-	forecast := data["forecasts"].([]interface{})
-	//fact := data["fact"].(map[string]interface{})
+	forecast := data["forecast"].(map[string]interface{})
+	fact := data["fact"].(map[string]interface{})
 
-	todayForecast := forecast[0].(map[string]interface{})
-	todayParts := todayForecast["parts"].(map[string]interface{})
-	todayMorning := todayParts["morning"].(map[string]interface{})
-	todayDay := todayParts["day"]
-	todayEvening := todayParts["evening"]
-	fmt.Println(todayDay, todayEvening)
+	todayParts := forecast["parts"].([]interface{})
 
-	//for _, value := range fact {
-	//	// Each value is an interface{} type, that is type asserted as a string
-	//	fmt.Println(value)
-	//}
+	var todayDay map[string]interface{}
+	var todayEvening map[string]interface{}
 
-	//var text string = "Сегодня утром будет " + conditionTranslate(todayMorning["condition"].(string))
+	for _, value := range todayParts {
+		switch value.(map[string]interface{})["part_name"] {
+		case "day":
+			todayDay = value.(map[string]interface{})
+		case "evening":
+			todayEvening = value.(map[string]interface{})
+		}
+	}
 
-	fmt.Println(getTemplate("day_forecast_show.gohtml", todayMorning))
+	type Forecast struct {
+		now     map[string]interface{}
+		day     map[string]interface{}
+		evening map[string]interface{}
+	}
+
+	templateData := Forecast{
+		now:     fact,
+		day:     todayDay,
+		evening: todayEvening,
+	}
+
+	fmt.Println(templateData.now["temp"])
+	fmt.Println(getTemplate("day_forecast_show.gohtml", templateData))
 	//sendToHorn(text)
 }
 
