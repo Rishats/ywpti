@@ -13,19 +13,14 @@ import (
 	"os"
 )
 
-func getTemplate(fileName string, data interface{}) (err error, result string) {
-	templates, err := template.ParseGlob("templates/*.gohtml")
-	if err != nil {
-		log.Fatal("Error loading templates:" + err.Error())
-	}
-
-	templates, err = templates.ParseFiles("templates/" + fileName)
+func getTemplate(fileName string, funcmap template.FuncMap, data interface{}) (err error, result string) {
+	template, err := template.New(fileName).Funcs(funcmap).ParseFiles("templates/" + fileName)
 	if err != nil {
 		return
 	}
 
 	var tpl bytes.Buffer
-	if err := templates.Execute(&tpl, data); err != nil {
+	if err := template.Execute(&tpl, data); err != nil {
 		panic(err)
 	}
 
@@ -92,6 +87,21 @@ func conditionTranslate(condition string) string {
 	return conditions[condition]
 }
 
+func windDirTranslate(windDir string) string {
+	windDirs := map[string]string{
+		"nw": "северо-западное",
+		"n":  "северное",
+		"ne": "северо-восточное",
+		"e":  "восточное",
+		"se": "юго-восточное",
+		"s":  "южное",
+		"sw": "юго-западное",
+		"w":  "западное",
+		"c":  "штиль"}
+
+	return windDirs[windDir]
+}
+
 func dayForecastShow() {
 	dataJson := apiData()
 	var data map[string]interface{}
@@ -115,19 +125,23 @@ func dayForecastShow() {
 	}
 
 	type Forecast struct {
-		now     map[string]interface{}
-		day     map[string]interface{}
-		evening map[string]interface{}
+		Now     map[string]interface{}
+		Day     map[string]interface{}
+		Evening map[string]interface{}
 	}
 
 	templateData := Forecast{
-		now:     fact,
-		day:     todayDay,
-		evening: todayEvening,
+		Now:     fact,
+		Day:     todayDay,
+		Evening: todayEvening,
 	}
 
-	fmt.Println(templateData.now["temp"])
-	fmt.Println(getTemplate("day_forecast_show.gohtml", templateData))
+	funcmap := template.FuncMap{
+		"conditionTranslate": conditionTranslate,
+		"windDirTranslate":   windDirTranslate,
+	}
+
+	fmt.Println(getTemplate("day_forecast_show.gohtml", funcmap, templateData))
 	//sendToHorn(text)
 }
 

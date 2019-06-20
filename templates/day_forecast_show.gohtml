@@ -1,2 +1,4 @@
 <h1>Weather</h1>
-<p>Now {{ .templateData.now["temp"] }}</p>
+{{ .Now.temp }}
+{{ conditionTranslate .Now.condition }}
+{{ windDirTranslate .Now.wind_dir }}
