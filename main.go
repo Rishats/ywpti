@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/ivahaev/russian-time"
 	"github.com/jasonlvhit/gocron"
 	"github.com/joho/godotenv"
 	"html/template"
@@ -11,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func getTemplate(fileName string, funcmap template.FuncMap, data interface{}) (result string, err error) {
@@ -64,24 +66,24 @@ func sendToHorn(text string) {
 
 func conditionTranslate(condition string) string {
 	conditions := map[string]string{
-		"clear":                            "ясно ☀️️",
-		"partly-cloudy":                    "малооблачно ⛅",
-		"cloudy":                           "облачно с прояснениями ☁️",
-		"overcast":                         "пасмурно 🌁",
-		"partly-cloudy-and-light-rain":     "небольшой дождь ☂️",
-		"partly-cloudy-and-rain":           "дождь ☔",
-		"overcast-and-rain":                "сильный дождь 🌧️",
-		"overcast-thunderstorms-with-rain": "сильный дождь, гроза ⛈️",
-		"cloudy-and-light-rain":            "небольшой дождь",
-		"overcast-and-light-rain":          "небольшой дождь",
-		"cloudy-and-rain":                  "дождь 🌧️",
-		"overcast-and-wet-snow":            "дождь со снегом",
-		"partly-cloudy-and-light-snow":     "небольшой снег ❄",
-		"partly-cloudy-and-snow":           "снег ❄️",
-		"overcast-and-snow":                "снегопад 🌨️ ❄️❄️❄️",
-		"cloudy-and-light-snow":            "небольшой снег 🌨️",
-		"overcast-and-light-snow":          "небольшой снег 🌨️",
-		"cloudy-and-snow":                  "снег ❄️"}
+		"clear":                            "Ясно ☀️️",
+		"partly-cloudy":                    "Малооблачно ⛅",
+		"cloudy":                           "Облачно с прояснениями ⛅️",
+		"overcast":                         "Пасмурно 🌁",
+		"partly-cloudy-and-light-rain":     "Небольшой дождь ☂️",
+		"partly-cloudy-and-rain":           "Дождь ☔",
+		"overcast-and-rain":                "Сильный дождь 🌧️",
+		"overcast-thunderstorms-with-rain": "Сильный дождь, гроза ⛈️",
+		"cloudy-and-light-rain":            "Небольшой дождь 🌧",
+		"overcast-and-light-rain":          "Небольшой дождь 🌧",
+		"cloudy-and-rain":                  "Дождь 🌧️",
+		"overcast-and-wet-snow":            "Дождь со снегом 🌧❄",
+		"partly-cloudy-and-light-snow":     "Небольшой снег ❄",
+		"partly-cloudy-and-snow":           "Снег ❄️",
+		"overcast-and-snow":                "Снегопад 🌨️ ❄️❄️❄️",
+		"cloudy-and-light-snow":            "Небольшой снег 🌨️",
+		"overcast-and-light-snow":          "Небольшой снег 🌨️",
+		"cloudy-and-snow":                  "Снег ❄️"}
 
 	return conditions[condition]
 }
@@ -99,6 +101,27 @@ func windDirTranslate(windDir string) string {
 		"c":  "штиль"}
 
 	return windDirs[windDir]
+}
+
+func hourWithMin() string {
+
+	timeStamp := time.Unix(time.Now().Unix(), 0)
+
+	hr, min, _ := timeStamp.Clock()
+
+	finalTime := "%d:%d"
+
+	result := fmt.Sprintf(finalTime, hr, min)
+
+	return result
+}
+
+func weekDay() rtime.Weekday {
+	t := rtime.Now()
+	standardTime := time.Now()
+	t = rtime.Time(standardTime)
+
+	return t.Weekday()
 }
 
 func dayForecastShow() {
@@ -138,6 +161,8 @@ func dayForecastShow() {
 	funcmap := template.FuncMap{
 		"conditionTranslate": conditionTranslate,
 		"windDirTranslate":   windDirTranslate,
+		"weekDay":            weekDay,
+		"hourWithMin":        hourWithMin,
 	}
 
 	text, err := getTemplate("day_forecast_show.gohtml", funcmap, templateData)
