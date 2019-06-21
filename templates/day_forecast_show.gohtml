@@ -1,4 +1,4 @@
-<h1>Weather</h1>
-{{ .Now.temp }}
+<h1>Погода</h1>
+<p>Сейчас за окном - {{ .Now.temp }}</p>
 {{ conditionTranslate .Now.condition }}
 {{ windDirTranslate .Now.wind_dir }}
