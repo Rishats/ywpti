@@ -180,11 +180,11 @@ func dinnerTimeForecastShow() {
 	fact := data["fact"].(map[string]interface{})
 
 	type Forecast struct {
-		Now     map[string]interface{}
+		Now map[string]interface{}
 	}
 
 	templateData := Forecast{
-		Now:     fact,
+		Now: fact,
 	}
 
 	funcmap := template.FuncMap{
@@ -212,7 +212,6 @@ func tasks() {
 	gocron.Every(1).Wednesday().At("12:00").Do(dinnerTimeForecastShow)
 	gocron.Every(1).Thursday().At("12:00").Do(dinnerTimeForecastShow)
 	gocron.Every(1).Friday().At("12:00").Do(dinnerTimeForecastShow)
-	gocron.Every(1).Saturday().At("19:20").Do(dinnerTimeForecastShow)
 
 	// remove, clear and next_run
 	_, time := gocron.NextRun()
