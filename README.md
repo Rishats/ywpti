@@ -30,7 +30,7 @@ cd ywpti
 Via docker:
 ```
  docker build -t wn .
- docker run -d wn
+ docker run -d --name "wn" wn
 ```
 
 Via go native:
