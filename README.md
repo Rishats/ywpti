@@ -23,6 +23,7 @@ cd ywpti
    YW_LON=76.927127
    YW_LANG=kk_KZ
    INTEGRAM_WEBHOOK_URI=https://integram.org/webhook/cCgds28sIpG
+   SENTRY_DSN=your-dsn
    ```
 
 ### Running

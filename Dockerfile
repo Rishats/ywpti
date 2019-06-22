@@ -23,6 +23,7 @@ WORKDIR /app
 RUN go get github.com/ivahaev/russian-time
 RUN go get github.com/jasonlvhit/gocron
 RUN go get github.com/joho/godotenv
+RUN go get github.com/getsentry/raven-go
 # we run go build to compile the binary
 # executable of our Go program
 RUN go build -o main .

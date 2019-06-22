@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/getsentry/raven-go"
 	"github.com/ivahaev/russian-time"
 	"github.com/jasonlvhit/gocron"
 	"github.com/joho/godotenv"
@@ -18,10 +19,14 @@ import (
 func getTemplate(fileName string, funcmap template.FuncMap, data interface{}) (result string, err error) {
 	template, err := template.New(fileName).Funcs(funcmap).ParseFiles("templates/" + fileName)
 	if err != nil {
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
 	}
 
 	var tpl bytes.Buffer
 	if err := template.Execute(&tpl, data); err != nil {
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
 		panic(err)
 	}
 
@@ -37,15 +42,24 @@ func apiData() string {
 	client := &http.Client{}
 
 	req, err := http.NewRequest("GET", apiUri, nil)
+	if err != nil {
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
+	}
 
 	req.Header.Add("X-Yandex-API-Key", apiKey)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		// handle error
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
+	}
 
 	return string(body)
 }
@@ -56,10 +70,18 @@ func sendToHorn(text string) {
 	}
 	mJson, _ := json.Marshal(m)
 	contentReader := bytes.NewReader(mJson)
-	req, _ := http.NewRequest("POST", os.Getenv("INTEGRAM_WEBHOOK_URI"), contentReader)
+	req, err := http.NewRequest("POST", os.Getenv("INTEGRAM_WEBHOOK_URI"), contentReader)
+	if err != nil {
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
+	}
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
-	resp, _ := client.Do(req)
+	resp, err := client.Do(req)
+	if err != nil {
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
+	}
 
 	fmt.Println(resp)
 }
@@ -167,7 +189,8 @@ func morningForecastShow() {
 
 	text, err := getTemplate("morning_forecast_show.gohtml", funcmap, templateData)
 	if err != nil {
-		log.Fatal(err)
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
 	}
 	sendToHorn(text)
 }
@@ -196,7 +219,8 @@ func dinnerTimeForecastShow() {
 
 	text, err := getTemplate("dinner_time_forecast_show.gohtml", funcmap, templateData)
 	if err != nil {
-		log.Fatal(err)
+		raven.CaptureErrorAndWait(err, nil)
+		log.Panic(err)
 	}
 	sendToHorn(text)
 }
@@ -207,11 +231,11 @@ func tasks() {
 	gocron.Every(1).Wednesday().At("9:00").Do(morningForecastShow)
 	gocron.Every(1).Thursday().At("9:00").Do(morningForecastShow)
 	gocron.Every(1).Friday().At("9:00").Do(morningForecastShow)
-	gocron.Every(1).Monday().At("12:00").Do(dinnerTimeForecastShow)
-	gocron.Every(1).Tuesday().At("12:00").Do(dinnerTimeForecastShow)
-	gocron.Every(1).Wednesday().At("12:00").Do(dinnerTimeForecastShow)
-	gocron.Every(1).Thursday().At("12:00").Do(dinnerTimeForecastShow)
-	gocron.Every(1).Friday().At("12:00").Do(dinnerTimeForecastShow)
+	gocron.Every(1).Monday().At("12:55").Do(dinnerTimeForecastShow)
+	gocron.Every(1).Tuesday().At("12:55").Do(dinnerTimeForecastShow)
+	gocron.Every(1).Wednesday().At("12:55").Do(dinnerTimeForecastShow)
+	gocron.Every(1).Thursday().At("12:55").Do(dinnerTimeForecastShow)
+	gocron.Every(1).Friday().At("12:55").Do(dinnerTimeForecastShow)
 
 	// remove, clear and next_run
 	_, time := gocron.NextRun()
@@ -225,6 +249,12 @@ func main() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
+	}
+
+	appEnv := os.Getenv("APP_ENV")
+
+	if appEnv == "production" {
+		raven.SetDSN(os.Getenv("SENTRY_DSN"))
 	}
 
 	tasks()
