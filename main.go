@@ -124,7 +124,7 @@ func weekDay() rtime.Weekday {
 	return t.Weekday()
 }
 
-func dayForecastShow() {
+func morningForecastShow() {
 	dataJson := apiData()
 	var data map[string]interface{}
 	json.Unmarshal([]byte(dataJson), &data)
@@ -165,7 +165,36 @@ func dayForecastShow() {
 		"hourWithMin":        hourWithMin,
 	}
 
-	text, err := getTemplate("day_forecast_show.gohtml", funcmap, templateData)
+	text, err := getTemplate("morning_forecast_show.gohtml", funcmap, templateData)
+	if err != nil {
+		log.Fatal(err)
+	}
+	sendToHorn(text)
+}
+
+func dinnerTimeForecastShow() {
+	dataJson := apiData()
+	var data map[string]interface{}
+	json.Unmarshal([]byte(dataJson), &data)
+
+	fact := data["fact"].(map[string]interface{})
+
+	type Forecast struct {
+		Now     map[string]interface{}
+	}
+
+	templateData := Forecast{
+		Now:     fact,
+	}
+
+	funcmap := template.FuncMap{
+		"conditionTranslate": conditionTranslate,
+		"windDirTranslate":   windDirTranslate,
+		"weekDay":            weekDay,
+		"hourWithMin":        hourWithMin,
+	}
+
+	text, err := getTemplate("dinner_time_forecast_show.gohtml", funcmap, templateData)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -173,11 +202,17 @@ func dayForecastShow() {
 }
 
 func tasks() {
-	gocron.Every(1).Monday().At("9:00").Do(dayForecastShow)
-	gocron.Every(1).Tuesday().At("9:00").Do(dayForecastShow)
-	gocron.Every(1).Wednesday().At("9:00").Do(dayForecastShow)
-	gocron.Every(1).Thursday().At("9:00").Do(dayForecastShow)
-	gocron.Every(1).Friday().At("9:00").Do(dayForecastShow)
+	gocron.Every(1).Monday().At("9:00").Do(morningForecastShow)
+	gocron.Every(1).Tuesday().At("9:00").Do(morningForecastShow)
+	gocron.Every(1).Wednesday().At("9:00").Do(morningForecastShow)
+	gocron.Every(1).Thursday().At("9:00").Do(morningForecastShow)
+	gocron.Every(1).Friday().At("9:00").Do(morningForecastShow)
+	gocron.Every(1).Monday().At("12:00").Do(dinnerTimeForecastShow)
+	gocron.Every(1).Tuesday().At("12:00").Do(dinnerTimeForecastShow)
+	gocron.Every(1).Wednesday().At("12:00").Do(dinnerTimeForecastShow)
+	gocron.Every(1).Thursday().At("12:00").Do(dinnerTimeForecastShow)
+	gocron.Every(1).Friday().At("12:00").Do(dinnerTimeForecastShow)
+	gocron.Every(1).Saturday().At("19:20").Do(dinnerTimeForecastShow)
 
 	// remove, clear and next_run
 	_, time := gocron.NextRun()
@@ -192,8 +227,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
-
-	dayForecastShow()
 
 	tasks()
 }

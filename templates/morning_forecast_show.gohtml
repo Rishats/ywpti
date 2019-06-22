@@ -1,0 +1,18 @@
+*🌡️ ibec МЕТЕОРО́ЛОГ - Алматы 🌡️*
+Сейчас:
+```
+{{ hourWithMin }} {{ weekDay }}
+{{ .Now.temp }}°C {{ conditionTranslate .Now.condition }}
+```
+Днем:
+```
+Минимальная: {{ .Day.temp_min }}°C
+Максимальная: {{ .Day.temp_max }}°C
+{{ conditionTranslate .Day.condition }}
+```
+Вечером:
+```
+Минимальная: {{ .Evening.temp_min }}°C
+Максимальная: {{ .Evening.temp_max }}°C
+{{ conditionTranslate .Evening.condition }}
+```
