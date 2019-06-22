@@ -5,6 +5,9 @@ FROM golang:1.12.6-alpine3.10
 # We install git
 RUN apk update && apk upgrade && \
     apk add --no-cache bash git openssh
+# Set timezone
+RUN apk add --no-cache tzdata
+ENV TZ Asia/Almaty
 # We create an /app directory within our
 # image that will hold our application source
 # files
