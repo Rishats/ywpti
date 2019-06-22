@@ -3,10 +3,20 @@
 Simple system which notify users about weather in to Telegram via [Horn](https://github.com/requilence/integram)
 
 ### Installing
+1 Clone project
+```
+git clone https://github.com/Rishats/ywpti.git
+```
+2 Change folder
+```
+cd ywpti
+```
+3 Create .env file from .env.example
 ```
  cp .env.example .env
 ```
-And configure your .env
+
+4 Configure your .env
 ```YW_API_KEY=be6653b5-4fdd-41a9-a31c-b3a935252493
    YW_API_URI=https://api.weather.yandex.ru/v1/informers
    YW_LAT=43.262547
@@ -15,13 +25,15 @@ And configure your .env
    INTEGRAM_WEBHOOK_URI=https://integram.org/webhook/cCgds28sIpG
    ```
 
-Run via docker,
+### Running
+
+Via docker:
 ```
  docker build -t wn .
  docker run -d wn
 ```
 
-Or via go native
+Via go native:
 
 ```
 go run main.go
