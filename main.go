@@ -252,7 +252,5 @@ func main() {
 		raven.SetDSN(os.Getenv("SENTRY_DSN"))
 	}
 
-	fmt.Println(hourWithMin())
-
 	tasks()
 }
