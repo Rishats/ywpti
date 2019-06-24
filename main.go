@@ -126,14 +126,9 @@ func windDirTranslate(windDir string) string {
 }
 
 func hourWithMin() string {
+	currentTime := time.Now()
 
-	timeStamp := time.Unix(time.Now().Unix(), 0)
-
-	hr, min, _ := timeStamp.Clock()
-
-	finalTime := "%d:%d"
-
-	result := fmt.Sprintf(finalTime, hr, min)
+	result := currentTime.Format("15:04")
 
 	return result
 }
@@ -256,6 +251,8 @@ func main() {
 	if appEnv == "production" {
 		raven.SetDSN(os.Getenv("SENTRY_DSN"))
 	}
+
+	fmt.Println(hourWithMin())
 
 	tasks()
 }
