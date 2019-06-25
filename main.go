@@ -221,11 +221,11 @@ func dinnerTimeForecastShow() {
 }
 
 func tasks() {
-	gocron.Every(1).Monday().At("9:00").Do(morningForecastShow)
-	gocron.Every(1).Tuesday().At("9:00").Do(morningForecastShow)
-	gocron.Every(1).Wednesday().At("9:00").Do(morningForecastShow)
-	gocron.Every(1).Thursday().At("9:00").Do(morningForecastShow)
-	gocron.Every(1).Friday().At("9:00").Do(morningForecastShow)
+	gocron.Every(1).Monday().At("7:00").Do(morningForecastShow)
+	gocron.Every(1).Tuesday().At("7:00").Do(morningForecastShow)
+	gocron.Every(1).Wednesday().At("7:00").Do(morningForecastShow)
+	gocron.Every(1).Thursday().At("7:00").Do(morningForecastShow)
+	gocron.Every(1).Friday().At("7:00").Do(morningForecastShow)
 	gocron.Every(1).Monday().At("12:55").Do(dinnerTimeForecastShow)
 	gocron.Every(1).Tuesday().At("12:55").Do(dinnerTimeForecastShow)
 	gocron.Every(1).Wednesday().At("12:55").Do(dinnerTimeForecastShow)
